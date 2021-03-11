@@ -99,16 +99,16 @@ public class UserService implements UserDetailsService {
 
         if (!StringUtils.isEmpty(user.getEmail())) {
             String message = String.format(
-                    "Доброго времени суток, %s %s! \n\n" +
-                            "Добро пожаловать в приложение \"Приёмная комиссия\".\n" +
-                            "Для продолжения регистрации и активации своего аккаунта перейдите, пожалуйста, по ссылке:\n" +
+                    "Good day, %s %s! \n\n" +
+                            "Welcome to the app \"Selection committee\".\n" +
+                            "To continue registration and activate your account, please follow the link:\n" +
                             "http://localhost:8080/activate/%s",
                     user.getFirstName(),
                     user.getLastName(),
                     user.getActivationCode()
             );
 
-            mailSender.send(user.getEmail(), "Код активации аккаунта", message);
+            mailSender.send(user.getEmail(), "Account activation code", message);
         }
     }
 
@@ -136,11 +136,11 @@ public class UserService implements UserDetailsService {
     public Map<String, String> getUserErrors(Map<String, String> form) {
         Map<String, String> errors = new HashMap<>();
         if (StringUtils.isEmpty(form.get("firstName"))) {
-            errors.put("firstNameError", "Имя пользователя не может быть пустым!");
+            errors.put("firstNameError", "Username cannot be empty!");
         }
 
         if (StringUtils.isEmpty(form.get("lastName"))) {
-            errors.put("lastNameError", "Фамилия пользователя не может быть пустым!");
+            errors.put("lastNameError", "User surname cannot be empty!");
         }
         return errors;
     }
@@ -176,32 +176,32 @@ public class UserService implements UserDetailsService {
                                                 String password, String confirmPassword, MultipartFile photo) {
         Map<String, String> errors = new HashMap<>();
         if (StringUtils.isEmpty(firstName)) {
-            errors.put("firstNameError", "Имя пользователя не может быть пустым!");
+            errors.put("firstNameError", "Username cannot be empty!");
         }
 
         if (StringUtils.isEmpty(lastName)) {
-            errors.put("lastNameError", "Фамилия пользователя не может быть пустым!");
+            errors.put("lastNameError", "User surname cannot be empty!");
         }
 
         if (StringUtils.isEmpty(email)) {
-            errors.put("emailError", "Email пользователя не может быть пустым!");
+            errors.put("emailError", "User email cannot be empty!");
         }
 
         if (password.length() < 6) {
-            errors.put("passwordError", "Пароль пользователя должен быть не менее 6 символов!");
+            errors.put("passwordError", "User password must be at least 6 characters!");
         }
 
         if (confirmPassword.length() < 6) {
-            errors.put("confirmPasswordError", "Пароль пользователя должен быть не менее 6 символов!");
+            errors.put("confirmPasswordError", "User password must be at least 6 characters!");
         }
 
         if (password != "" && confirmPassword != "" && !password.equals(confirmPassword)) {
-            errors.put("confirmPasswordError", "Введённые пароли не совпадают!");
+            errors.put("confirmPasswordError", "The entered passwords do not match!");
         }
 
         if (user.getAccessLevels().contains(AccessLevel.valueOf("USER"))) {
             if (!photo.isEmpty() && !photo.getContentType().contains("image")) {
-                errors.put("photoError", "Файл фотографии должен быть графическим изображением!");
+                errors.put("photoError", "The photo file must be a graphic image!");
             }
         }
         return errors;

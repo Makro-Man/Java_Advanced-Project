@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+      th:with="title='Items'">
+
+<th:block th:replace="fragments/common::commonPage(_, ~{::main})">
+    <main>
+        <h3>[[${title}]]</h3>
+        <a class="btn btn-primary mb-3" th:href="@{'/subject/create'}">Новый предмет</a>
+        <table class="table table-bordered">
+            <thead class="thead-light">
+            <tr>
+                <th scope="col">id</th>
+                <th scope="col">Название</th>
+                <th scope="col"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="subject: ${subjects}">
+                <th th:text="${subject.id}"/>
+                <td th:text="${subject.title}"/>
+                <td>
+                    <a th:href="@{'/subject/edit?id=' + ${subject.id}}">ред.</a>
+                    <span th:if="${subject.faculties.isEmpty()}">  |
+							<a th:href="@{'/subject/delete?id=' + ${subject.id}}">удал.</a>
+						</span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </main>
+</th:block>
+
+</html>

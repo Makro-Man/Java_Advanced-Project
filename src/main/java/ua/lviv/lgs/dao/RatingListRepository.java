@@ -2,8 +2,6 @@ package ua.lviv.lgs.dao;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -40,5 +38,5 @@ public interface RatingListRepository extends JpaRepository<RatingList, Integer>
             "WHERE rl.accepted IS TRUE AND app.applicant_id = ?1", nativeQuery = true)
     List<Integer> findSpecialitiesByApplicant(Integer applicantId);
 
-    Page<RatingList> findByAcceptedFalseAndRejectionMessageIsNull(Pageable pageable);
+    List<RatingList> findByAcceptedFalseAndRejectionMessageIsNull();
 }
