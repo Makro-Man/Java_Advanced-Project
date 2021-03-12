@@ -43,7 +43,7 @@ public class MainController {
         session.setAttribute("user", userFromDb);
 
         if (userFromDb.getAccessLevels().contains(AccessLevel.valueOf("USER"))) {
-            List<Speciality> specialitiesByApplicant = ratingListService.findSpecialitiesByApplicant(userFromDb.getId());
+            List<Speciality> specialitiesByApplicant = ratingListService.findSpecialitiesAppliedByApplicant(userFromDb.getId());
             Map<Speciality, Set<Applicant>> enrolledApplicants = new HashMap<>();
 
             for (Speciality speciality : specialitiesByApplicant) {
@@ -52,7 +52,7 @@ public class MainController {
 
             session.setAttribute("photo", userService.parseFileData(userFromDb));
             session.setAttribute("specialities", specialitiesByApplicant);
-            model.addAttribute("submittedApps", ratingListService.parseApplicationsBySpeciality());
+            model.addAttribute("submittedApps", ratingListService.parseNumberOfApplicationsBySpeciality());
             model.addAttribute("isRejectedAppsPresent", applicationService.checkForRejectedApplications(applicationService.findByApplicant(userFromDb.getApplicant())));
             model.addAttribute("enrolledApplicants", enrolledApplicants);
         }

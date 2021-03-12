@@ -118,7 +118,7 @@ public class Applicant implements Serializable, Comparable<Applicant> {
         this.user = user;
     }
 
-    public java.util.Set<Application> getApplications() {
+    public Set<Application> getApplications() {
         return applications;
     }
 

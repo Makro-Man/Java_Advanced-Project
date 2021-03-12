@@ -1,5 +1,6 @@
 package ua.lviv.lgs.controller;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -44,7 +46,14 @@ public class UserController {
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping
     public String userSave(@RequestParam Map<String, String> form, @RequestParam("userId") User user, Model model) {
-        Map<String, String> errors = userService.getUserErrors(form);
+        Map<String, String> errors = new HashMap<>();
+        if (StringUtils.isEmpty(form.get("firstName"))) {
+            errors.put("firstNameError", "Username cannot be empty!");
+        }
+
+        if (StringUtils.isEmpty(form.get("lastName"))) {
+            errors.put("lastNameError", "User surname cannot be empty!");
+        }
 
         if (!errors.isEmpty()) {
             model.mergeAttributes(errors);
@@ -80,7 +89,36 @@ public class UserController {
             @RequestParam(required = false) MultipartFile photo,
             @RequestParam(required = false) String removePhotoFlag,
             Model model) throws IOException {
-        Map<String, String> errors = userService.getProfileErrors(user, firstName, lastName, email, password, confirmPassword, photo);
+        Map<String, String> errors = new HashMap<>();
+        if (StringUtils.isEmpty(firstName)) {
+            errors.put("firstNameError", "Username cannot be empty!");
+        }
+
+        if (StringUtils.isEmpty(lastName)) {
+            errors.put("lastNameError", "User surname cannot be empty!");
+        }
+
+        if (StringUtils.isEmpty(email)) {
+            errors.put("emailError", "User email cannot be empty!");
+        }
+
+        if (password.length() < 6) {
+            errors.put("passwordError", "User password must be at least 6 characters!");
+        }
+
+        if (confirmPassword.length() < 6) {
+            errors.put("confirmPasswordError", "User password must be at least 6 characters!");
+        }
+
+        if (password != "" && confirmPassword != "" && !password.equals(confirmPassword)) {
+            errors.put("confirmPasswordError", "The entered passwords do not match!");
+        }
+
+        if (user.getAccessLevels().contains(AccessLevel.valueOf("USER"))) {
+            if (!photo.isEmpty() && !photo.getContentType().contains("image")) {
+                errors.put("photoError", "The photo file must be a graphic image!");
+            }
+        }
 
         if (!errors.isEmpty()) {
             model.mergeAttributes(errors);
@@ -94,14 +132,7 @@ public class UserController {
             return "profile";
         }
 
-        boolean userExists = !userService.updateProfile(user, firstName, lastName, email, password, birthDate, city, school, photo, removePhotoFlag);
-
-        if (userExists) {
-            model.addAttribute("userExistsMessage", "Такой пользователь уже существует!");
-            model.addAttribute("user", userService.findById(user.getId()));
-
-            return "profile";
-        }
+        userService.updateProfile(user, firstName, lastName, email, password, birthDate, city, school, photo, removePhotoFlag);
 
         return "redirect:/main";
     }

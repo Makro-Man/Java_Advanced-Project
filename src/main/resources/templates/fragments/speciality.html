@@ -21,7 +21,7 @@
             <label class="col-sm-2 col-form-label">Faculty: </label>
             <div class="col-sm-6">
                 <select th:class="${facultyError}?'form-control is-invalid':'form-control'"	name="faculty">
-                    <option value="">Faculty</option>
+                    <option value="">Факультет</option>
                     <option th:each="faculty : ${faculties}" th:value="${faculty.id}" th:text="${faculty.title}"
                             th:selected=${isEditForm}?${faculty.id.equals(speciality.faculty.id)}></option>
                 </select>

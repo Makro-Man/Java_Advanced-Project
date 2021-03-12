@@ -38,11 +38,6 @@ public class Faculty implements Serializable {
     @JoinTable(name = "subject_faculty", joinColumns = @JoinColumn(name = "faculty_id"), inverseJoinColumns = @JoinColumn(name = "subject_id"))
     private Set<Subject> examSubjects;
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "subject_coeffs")
-    @MapKeyColumn(name = "subject_id")
-    private Map<Subject, Double> subjectCoeffs;
-
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "faculty")
     @Column(nullable = false)
     private Set<Speciality> specialities;
@@ -77,14 +72,6 @@ public class Faculty implements Serializable {
 
     public void setExamSubjects(Set<Subject> examSubjects) {
         this.examSubjects = examSubjects;
-    }
-
-    public Map<Subject, Double> getSubjectCoeffs() {
-        return subjectCoeffs;
-    }
-
-    public void setSubjectCoeffs(Map<Subject, Double> subjectCoeffs) {
-        this.subjectCoeffs = subjectCoeffs;
     }
 
     public Set<Speciality> getSpecialities() {

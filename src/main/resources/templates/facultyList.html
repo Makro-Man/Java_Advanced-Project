@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org"
       xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
-      th:with="title='Факультеты'">
+      th:with="title='Faculties'">
 
 <th:block th:replace="fragments/common::commonPage(_, ~{::main})">
     <main>
         <h3>[[${title}]]</h3>
-        <a class="btn btn-primary mb-3" th:href="@{'/faculty/create'}">Новый факультет</a>
+        <a class="btn btn-primary mb-3" th:href="@{'/faculty/create'}">New faculty</a>
         <table class="table table-bordered">
             <thead class="thead-light">
             <tr>
                 <th scope="col">id</th>
-                <th scope="col">Название</th>
-                <th scope="col">Специальности</th>
-                <th scope="col">Необходимые предметы</th>
+                <th scope="col">Name</th>
+                <th scope="col">Specialties</th>
+                <th scope="col">Required items</th>
                 <th scope="col"></th>
             </tr>
             </thead>
@@ -25,7 +25,7 @@
                 <td><div th:each="examSubject, iterStat: ${faculty.examSubjects}" th:text="${!iterStat.last} ? ${examSubject.title} + ', ' : ${examSubject.title}"></div></td>
                 <td>
                     <a th:href="@{'/faculty/edit?id=' + ${faculty.id}}">ред.</a>
-                    <span th:if="${faculty.examSubjects.isEmpty() AND faculty.specialities.isEmpty()}">  |
+                    <span th:if="${faculty.examSubjects.isEmpty() and faculty.specialities.isEmpty()}">  |
 							<a th:href="@{'/faculty/delete?id=' + ${faculty.id}}">удал.</a>
 						</span>
                 </td>

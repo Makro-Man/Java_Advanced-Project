@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org"
       xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
-      th:with="title='Перечень новых вступительных заявок'">
+      th:with="title='List of new introductory applications'">
 
 <th:block th:replace="fragments/common::commonPage(_, ~{::main})">
     <main>
@@ -10,10 +10,10 @@
             <thead class="thead-light">
             <tr>
                 <th scope="col">id</th>
-                <th scope="col">Абитуриент</th>
-                <th scope="col">Специальность</th>
-                <th scope="col">Баллы по предметам</th>
-                <th scope="col">Рейтинговый балл</th>
+                <th scope="col">Enrollee</th>
+                <th scope="col">Specialty</th>
+                <th scope="col">Subject scores</th>
+                <th scope="col">Rating score</th>
                 <th scope="col"></th>
             </tr>
             </thead>
@@ -26,11 +26,11 @@
                     <div th:each="znoMark: ${app.application.znoMarks}"
                          th:text="|${znoMark.key.title}: ${znoMark.value} бал.,|">
                     </div>
-                    <div th:text="|Ср. балл аттестата: ${app.application.attMark} бал.|"></div>
+                    <div th:text="|Average score of the certificate: ${app.application.attMark} score.|"></div>
                 </td>
-                <td th:text="${#numbers.formatDecimal(app.totalMark, 3, 2)} + ' бал.'"/>
+                <td th:text="${#numbers.formatDecimal(app.totalMark, 3, 2)} + ' score.'"/>
                 <td>
-                    <a th:href="@{'/application/edit?id=' + ${app.id}}">открыть</a>
+                    <a th:href="@{'/application/edit?id=' + ${app.id}}">open</a>
                 </td>
             </tr>
             </tbody>

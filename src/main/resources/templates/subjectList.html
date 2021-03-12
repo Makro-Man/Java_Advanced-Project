@@ -6,12 +6,12 @@
 <th:block th:replace="fragments/common::commonPage(_, ~{::main})">
     <main>
         <h3>[[${title}]]</h3>
-        <a class="btn btn-primary mb-3" th:href="@{'/subject/create'}">Новый предмет</a>
+        <a class="btn btn-primary mb-3" th:href="@{'/subject/create'}">New Item</a>
         <table class="table table-bordered">
             <thead class="thead-light">
             <tr>
                 <th scope="col">id</th>
-                <th scope="col">Название</th>
+                <th scope="col">Name</th>
                 <th scope="col"></th>
             </tr>
             </thead>
@@ -20,9 +20,9 @@
                 <th th:text="${subject.id}"/>
                 <td th:text="${subject.title}"/>
                 <td>
-                    <a th:href="@{'/subject/edit?id=' + ${subject.id}}">ред.</a>
+                    <a th:href="@{'/subject/edit?id=' + ${subject.id}}">ed.</a>
                     <span th:if="${subject.faculties.isEmpty()}">  |
-							<a th:href="@{'/subject/delete?id=' + ${subject.id}}">удал.</a>
+							<a th:href="@{'/subject/delete?id=' + ${subject.id}}">del.</a>
 						</span>
                 </td>
             </tr>

@@ -35,7 +35,7 @@
                         <span th:if="${speciality.applications.isEmpty()}">  |
 								<a th:href="@{'/speciality/delete?id=' + ${speciality.id}}">del.</a>
 							</span>
-                        <div th:each="submittedApp : ${submittedApps}" th:if="${submittedApp.key.equals(speciality) AND submittedApp.value != 0}">
+                        <div th:each="submittedApp : ${submittedApps}" th:if="${submittedApp.key.equals(speciality) and submittedApp.value != 0}">
                             <a class="badge badge-pill badge-danger" th:href="@{'/speciality/complete?id=' + ${speciality.id}}">complete the set</a>
                         </div>
                     </div>

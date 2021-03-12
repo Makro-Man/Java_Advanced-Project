@@ -48,7 +48,7 @@ public class ApplicationController {
         List<Application> applicationsList = applicationService.findByApplicant(user.getApplicant());
         model.addAttribute("applications", applicationsList);
         model.addAttribute("applicationsStatus", applicationService.getApplicationsStatus(applicationsList));
-        session.setAttribute("specialities", ratingListService.findSpecialitiesByApplicant(user.getId()));
+        session.setAttribute("specialities", ratingListService.findSpecialitiesAppliedByApplicant(user.getId()));
 
         return "applicationList";
     }
@@ -72,7 +72,7 @@ public class ApplicationController {
             Map<String, String> errors = ControllerUtils.getErrors(bindingResult);
             model.mergeAttributes(errors);
             model.mergeAttributes(supportingDocumentErrors);
-            model.addAttribute(!znoMarksErrors.isEmpty() ? "message" : "", "When filling in points for UPE, errors were found: " +
+            model.addAttribute(!znoMarksErrors.isEmpty() ? "message" : "", "Errors were found when filling in points for UPE: " +
                     znoMarksErrors.values() + ". Please try filling out the form again!");
             model.addAttribute(form.get("speciality") == "" ? "specialityError" : "", "The Specialty field cannot be empty!");
             model.addAttribute("specialities", specialityService.findByRecruitmentCompletedFalse());

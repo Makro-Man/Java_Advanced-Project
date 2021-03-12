@@ -77,12 +77,12 @@
                            onchange="$(this).next('.custom-file-label').addClass('selected').html(
 							$(this)[0].files.length == 0 ? 'Select files...' :
 								( $(this)[0].files.length == 1 ? $(this).val().split('\\').pop() :
-									'Число файлов: ' + $(this)[0].files.length ) )" />
+									'Number of files: ' + $(this)[0].files.length ) )" />
                     <label for="customFile" class="custom-file-label text-muted text-truncate" sec:authorize="hasAuthority('USER')">Select files...</label>
                     <div th:if="${supportingDocumentError}" class="invalid-feedback" th:text="${supportingDocumentError}"></div>
                     <small class="form-text text-muted" id="filesList"></small>
                     <small th:if="${isEditForm}" class="form-text text-muted ml-4" th:each="supDoc: ${aplication?.supportingDocuments}">
-                        <input class="form-check-input" type="checkbox" th:name="|delete${supDoc.id}|" title="Удалить" sec:authorize="hasAuthority('USER')"/>
+                        <input class="form-check-input" type="checkbox" th:name="|delete${supDoc.id}|" title="Delete" sec:authorize="hasAuthority('USER')"/>
                         <label class="form-check-label">
                             <strong><a th:href="@{|${downloadURI}${supDoc.id}|}">[[${supDoc.fileName}]]</a></strong> ([[${supDoc.fileType}]]) - [[${supDoc.fileData.length}]] bytes
                         </label>

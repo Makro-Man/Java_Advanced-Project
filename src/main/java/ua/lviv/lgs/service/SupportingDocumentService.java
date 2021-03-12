@@ -10,6 +10,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -21,14 +23,20 @@ import ua.lviv.lgs.domain.SupportingDocument;
 
 @Service
 public class SupportingDocumentService {
+    Logger logger = LoggerFactory.getLogger(SupportingDocumentService.class);
+
     @Autowired
     private SupportingDocumentRepository supportingDocumentRepository;
 
     public List<SupportingDocument> findAllByApplication(Application application) {
+        logger.trace("Getting all supporting documents by specified application from database...");
+
         return supportingDocumentRepository.findAllByApplication(application);
     }
 
     public SupportingDocument getFile(String fileId) throws FileNotFoundException {
+        logger.trace("Getting supporting document file by id from database...");
+
         Optional<SupportingDocument> fileFromDb = supportingDocumentRepository.findById(fileId);
         SupportingDocument file = fileFromDb.orElseThrow(() -> new FileNotFoundException("There is no file with id " + fileId + " in database!"));
 
@@ -36,6 +44,8 @@ public class SupportingDocumentService {
     }
 
     public SupportingDocument storeFile(MultipartFile file, Application application) throws IOException {
+        logger.trace("Saving new supporting document file in database...");
+
         SupportingDocument supportingDocument = new SupportingDocument();
 
         supportingDocument.setFileName(StringUtils.cleanPath(file.getOriginalFilename()));
@@ -47,15 +57,19 @@ public class SupportingDocumentService {
     }
 
     public void deleteFile(String fileId) {
+        logger.trace("Deleting supporting document file from database...");
+
         supportingDocumentRepository.deleteById(fileId);
     }
 
     public Map<String, String> getSupportingDocumentErrors(MultipartFile[] supportingDocuments) throws IOException {
+        logger.trace("Checking attached supporting documents for upload errors...");
+
         Map<String, String> supportingDocumentErrors = new HashMap<>();
 
         for (MultipartFile file : supportingDocuments) {
             if (file.getBytes().length > 8388608) {
-                supportingDocumentErrors.put("supportingDocumentError", "The file size cannot be more than 8 MB!");
+                supportingDocumentErrors.put("supportingDocumentError", "Размер файла не может быть более 8 Мб!");
                 break;
             }
         }
@@ -63,6 +77,8 @@ public class SupportingDocumentService {
     }
 
     public Set<SupportingDocument> initializeSupportingDocumentSet(Application application, MultipartFile[] supportingDocuments) throws IOException {
+        logger.trace("Initializing supporting documents set for specified application...");
+
         List<SupportingDocument> supportingDocumentListFromDb = findAllByApplication(application);
         Set<SupportingDocument> supportingDocumentsSet;
 
@@ -85,6 +101,8 @@ public class SupportingDocumentService {
     }
 
     public void deleteSupportingDocuments(Map<String, String> form) {
+        logger.trace("Deleting supporting documents...");
+
         for (String key : form.keySet()) {
             if (key.startsWith("delete")) {
                 String fileId = key.replace("delete", "");

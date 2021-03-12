@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org"
       xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
-      th:with="title='Вступительные заявки'">
+      th:with="title='Introductory Applications'">
 
 <th:block th:replace="fragments/common::commonPage(_, ~{::main})">
     <main>
         <h3>[[${title}]]</h3>
-        <a th:if="${#lists.size(applications) < 5}" class="btn btn-primary mb-3" th:href="@{'/application/create'}">Новая заявка</a>
+        <a th:if="${#lists.size(applications) < 5}" class="btn btn-primary mb-3" th:href="@{'/application/create'}">New application</a>
         <div th:if="${#lists.size(applications) >= 5}" class="alert alert-info" role="alert">
-            Заявление можно подать не более, чем на 5 специальностей!
+            The application can be submitted for no more than 5 specialties!
         </div>
         <table class="table table-bordered">
             <thead class="thead-light">
             <tr>
                 <th scope="col"></th>
-                <th scope="col">Специальность</th>
-                <th scope="col">Баллы по предметам</th>
-                <th scope="col">Статус заявки</th>
+                <th scope="col">Specialty</th>
+                <th scope="col">Subject scores</th>
+                <th scope="col">Application status</th>
                 <th scope="col"></th>
             </tr>
             </thead>
@@ -31,16 +31,16 @@
                     <div th:text="|Ср. балл аттестата: ${aplication.attMark} бал.|"></div>
                 </td>
                 <td th:each="status : ${applicationsStatus}" th:if="${status.key.equals(aplication.id)}" th:switch="${status.value}">
-                    <span th:case="'Ожидает обработки'" class="badge badge-pill badge-warning">Ожидает обработки</span>
-                    <span th:case="'Отклонена'" class="badge badge-pill badge-danger">Отклонена</span>
-                    <span th:case="'Принята'" class="badge badge-pill badge-success">Принята</span>
+                    <span th:case="'Pending processing'" class="badge badge-pill badge-warning">Pending processing</span>
+                    <span th:case="'Rejected'" class="badge badge-pill badge-danger">Rejected</span>
+                    <span th:case="'Accepted'" class="badge badge-pill badge-success">Accepted</span>
                 </td>
                 <td>
 						<span th:unless="${aplication.ratingList.accepted}">
-							<a th:href="@{'/application/edit?id=' + ${aplication.id}}">ред.</a>  |
+							<a th:href="@{'/application/edit?id=' + ${aplication.id}}">ed.</a>  |
 						</span>
                     <span th:unless="${aplication.speciality.recruitmentCompleted}">
-							<a th:href="@{'/application/delete?id=' + ${aplication.id}}">удал.</a>
+							<a th:href="@{'/application/delete?id=' + ${aplication.id}}">del.</a>
 						</span>
                 </td>
             </tr>

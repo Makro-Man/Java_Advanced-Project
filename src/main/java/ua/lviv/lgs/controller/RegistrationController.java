@@ -53,23 +53,24 @@ public class RegistrationController {
         if (StringUtils.isEmpty(confirmPassword) || bindingResult.hasErrors() || !captchaResponse.isSuccess()) {
             Map<String, String> errors = ControllerUtils.getErrors(bindingResult);
             model.mergeAttributes(errors);
-            model.addAttribute("confirmPasswordError", "Пароль пользователя должен быть не менее 6 символов!");
-            model.addAttribute("captchaError", "Заполните, пожалуйста, капчу!");
+            model.addAttribute("confirmPasswordError", "User password must be at least 6 characters!");
+            model.addAttribute("captchaError", "Please fill in the captcha!");
             return "registration";
         }
 
         if (user.getPassword() != null && !user.getPassword().equals(confirmPassword)) {
-            model.addAttribute("confirmPasswordError2", "Введённые пароли не совпадают!");
+            model.addAttribute("confirmPasswordError", "The entered passwords do not match!");
             return "registration";
         }
 
         if (!userService.addUser(user)) {
-            model.addAttribute("userExistsMessage", "Такой пользователь уже существует!");
+            model.addAttribute("messageType", "danger");
+            model.addAttribute("message", "This user already exists!");
             return "registration";
         }
 
-        redir.addFlashAttribute("activationMessage", "Для активации пользователя перейдите по ссылке в письме, отправленном на указанный Вами электронный ящик!");
-        return "activationMessage";
+        redir.addFlashAttribute("message", "To activate the user, follow the link in the letter sent to the email address you specified!");
+        return "redirect:/login/";
     }
 
     @GetMapping("/activate/{code}")
@@ -77,9 +78,11 @@ public class RegistrationController {
         boolean isActivated = userService.activateUser(code);
 
         if (isActivated) {
-            model.addAttribute("activationSucceedMessage", "Пользователь успешно активирован!");
+            model.addAttribute("messageType", "success");
+            model.addAttribute("message", "User successfully activated!");
         } else {
-            model.addAttribute("activationFailedMessage", "Код активации не найден!");
+            model.addAttribute("messageType", "danger");
+            model.addAttribute("message", "Activation code not found!");
         }
 
         return "login";

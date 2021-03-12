@@ -13,6 +13,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +30,8 @@ import ua.lviv.lgs.dto.SpecialityDTO;
 
 @Service
 public class RatingListService {
+    Logger logger = LoggerFactory.getLogger(RatingListService.class);
+
     @Autowired
     private RatingListRepository ratingListRepository;
     @Autowired
@@ -38,10 +42,14 @@ public class RatingListService {
     private MailSender mailSender;
 
     public Optional<RatingList> findById(Integer id) {
+        logger.trace("Getting rating list by id=" + id + " from database...");
+
         return ratingListRepository.findById(id);
     }
 
     public RatingList initializeRatingList(Application application, Map<String, String> form) {
+        logger.trace("Initializing rating list for specified application...");
+
         Optional<RatingList> ratingListFromDb = findById(application.getId());
         RatingList ratingList = ratingListFromDb.orElse(new RatingList());
 
@@ -50,29 +58,43 @@ public class RatingListService {
         Double totalMark = calculateTotalMark(application.getZnoMarks(), application.getAttMark());
         ratingList.setTotalMark(totalMark);
 
-        for (String key : form.keySet()) {
-            if (key.equals("rejectionMessage") && !form.get(key).isEmpty()) {
-                ratingList.setRejectionMessage(form.get(key));
-                sendRejectionEmail(application, form.get(key));
-            } else {
-                ratingList.setRejectionMessage(null);
-            }
-        }
+        checkApplicationForRejectionMessage(application, form, ratingList);
 
-        for (String key : form.keySet()) {
-            if (key.equals("accept")) {
-                ratingList.setAccepted(true);
-                ratingList.setRejectionMessage(null);
-                sendAcceptionEmail(application);
-            }
-        }
+        checkApplicationForBeingAccepted(application, form, ratingList);
 
         ratingList.setApplication(application);
 
         return ratingList;
     }
 
-    public void sendAcceptionEmail(Application application) {
+    public void checkApplicationForRejectionMessage(Application application, Map<String, String> form, RatingList ratingList) {
+        logger.trace("Checking application for rejection message present...");
+
+        for (String key : form.keySet()) {
+            if (key.equals("rejectionMessage") && !form.get(key).isEmpty()) {
+                ratingList.setRejectionMessage(form.get(key));
+                sendApplicationRejectionEmail(application, form.get(key));
+            } else {
+                ratingList.setRejectionMessage(null);
+            }
+        }
+    }
+
+    public void checkApplicationForBeingAccepted(Application application, Map<String, String> form,	RatingList ratingList) {
+        logger.trace("Checking application for being accepted...");
+
+        for (String key : form.keySet()) {
+            if (key.equals("accept")) {
+                ratingList.setAccepted(true);
+                ratingList.setRejectionMessage(null);
+                sendApplicationAcceptanceEmail(application);
+            }
+        }
+    }
+
+    public void sendApplicationAcceptanceEmail(Application application) {
+        logger.trace("Sending application acceptance message to user's email...");
+
         String message = String.format(
                 "Good day, %s %s! \n\n" +
                         "Your introductory specialty application \"%s\" accepted by the administrator.\n" +
@@ -85,7 +107,9 @@ public class RatingListService {
         mailSender.send(application.getApplicant().getUser().getEmail(), "Introductory application for specialty \"" + application.getSpeciality().getTitle() + "\" accepted", message);
     }
 
-    public void sendRejectionEmail(Application application, String rejectionMessage) {
+    public void sendApplicationRejectionEmail(Application application, String rejectionMessage) {
+        logger.trace("Sending application rejection message to user's email...");
+
         String message = String.format(
                 "Good day, %s %s! \n\n" +
                         "Your introductory specialty application \"%s\" rejected by the administrator for the following reason: \"%s\".\n" +
@@ -100,6 +124,8 @@ public class RatingListService {
     }
 
     public Double calculateTotalMark(Map<Subject, Integer> znoMarks, Integer attMark) {
+        logger.trace("Calculating application total mark...");
+
         Integer i = 1;
         Double totalMark = Double.valueOf(attMark);
 
@@ -113,7 +139,9 @@ public class RatingListService {
         return totalMark;
     }
 
-    public Map<Speciality, Integer> parseApplicationsBySpeciality() {
+    public Map<Speciality, Integer> parseNumberOfApplicationsBySpeciality() {
+        logger.trace("Parsing number of applications by specialty from DB array and mapping to Java Collection of objects...");
+
         List<Object[]> submittedAppsFromDb = ratingListRepository.countApplicationsBySpeciality();
         List<Speciality> specialitiesList = specialityRepository.findAll();
         Map<Speciality, Integer> submittedApps = new HashMap<>();
@@ -133,6 +161,8 @@ public class RatingListService {
     }
 
     public Map<Applicant, Double> parseApplicantsRankBySpeciality(Integer specialityId) {
+        logger.trace("Parsing applicants rank by specialty from DB array and mapping to Java Collection of objects...");
+
         List<Object[]> applicantsRankFromDb = ratingListRepository.getApplicantsRankBySpeciality(specialityId);
         List<Applicant> applicantsList = applicantRepository.findAll();
         Map<Applicant, Double> applicantsRank = new HashMap<>();
@@ -150,7 +180,9 @@ public class RatingListService {
                         (oldValue, newValue) -> oldValue, LinkedHashMap::new));
     }
 
-    public List<Speciality> findSpecialitiesByApplicant(Integer applicantId) {
+    public List<Speciality> findSpecialitiesAppliedByApplicant(Integer applicantId) {
+        logger.trace("Getting all specialities applied by applicant from database...");
+
         List<Integer> specialitiesByApplicantFromDb = ratingListRepository.findSpecialitiesByApplicant(applicantId);
         List<Speciality> specialitiesList = specialityRepository.findAll();
 
@@ -160,23 +192,31 @@ public class RatingListService {
                 .collect(Collectors.toList());
     }
 
-    public Set<SpecialityDTO> parseSpecialitiesByApplicant(Integer applicantId) {
-        List<Speciality> specialities = findSpecialitiesByApplicant(applicantId);
+    public Set<SpecialityDTO> parseSpecialitiesAppliedByApplicant(Integer applicantId) {
+        logger.trace("Parsing specialities applied by applicant and mapping to Set of Speciality DTO objects...");
+
+        List<Speciality> specialities = findSpecialitiesAppliedByApplicant(applicantId);
 
         return specialities.stream().map(speciality -> new SpecialityDTO(speciality.getId(), speciality.getTitle()))
                 .collect(Collectors.toCollection(TreeSet::new));
     }
 
     public List<RatingList> findNotAcceptedApps() {
+        logger.trace("Getting all not accepted applications from database...");
+
         return ratingListRepository.findByAcceptedFalseAndRejectionMessageIsNull();
     }
 
-    public void completeRecruitmentBySpeciality(Speciality speciality) {
+    public void announceRecruitmentResultsBySpeciality(Speciality speciality) {
+        logger.trace("Preparing to announce recruitment results by specified speciality...");
+
         Set<Applicant> enrolledApplicants = getEnrolledApplicantsBySpeciality(speciality);
-        enrolledApplicants.stream().forEach(applicant -> sendEnrolledEmail(applicant, speciality));
+        enrolledApplicants.stream().forEach(applicant -> sendApplicantEnrollmentEmail(applicant, speciality));
     }
 
     public Set<Applicant> getEnrolledApplicantsBySpeciality(Speciality speciality) {
+        logger.trace("Getting all enrolled applicants by speciality...");
+
         Map<Applicant, Double> applicantsRank = parseApplicantsRankBySpeciality(speciality.getId());
         Set<Applicant> enrolledApplicants = new LinkedHashSet<>();
         Integer i = 1;
@@ -192,7 +232,9 @@ public class RatingListService {
         return enrolledApplicants;
     }
 
-    public void sendEnrolledEmail(Applicant applicant, Speciality speciality) {
+    public void sendApplicantEnrollmentEmail(Applicant applicant, Speciality speciality) {
+        logger.trace("Sending applicant enrollment message to user's email...");
+
         String message = String.format(
                 "Good day, %s %s! \n\n" +
                         "Congratulations! Based on the results of the competitive selection for the specialty \"%s\" You are among the applicants recommended for admission.\n" +

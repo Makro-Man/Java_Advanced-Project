@@ -34,7 +34,7 @@ public class SpecialityController {
     @GetMapping
     public String viewSpecialityList(Model model) {
         List<Speciality> specialitiesList = specialityService.findAll();
-        Map<Speciality, Integer> submittedApps = ratingListService.parseApplicationsBySpeciality();
+        Map<Speciality, Integer> submittedApps = ratingListService.parseNumberOfApplicationsBySpeciality();
         model.addAttribute("specialities", specialitiesList);
         model.addAttribute("submittedApps", submittedApps);
 

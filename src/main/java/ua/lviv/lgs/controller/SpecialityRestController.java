@@ -17,6 +17,6 @@ public class SpecialityRestController {
 
     @GetMapping("/specialitiesByApplicant")
     public Set<SpecialityDTO> viewSpecialitiesByApplicant(@RequestParam("id") Integer applicantId) {
-        return ratingListService.parseSpecialitiesByApplicant(applicantId);
+        return ratingListService.parseSpecialitiesAppliedByApplicant(applicantId);
     }
 }

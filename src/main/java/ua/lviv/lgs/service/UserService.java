@@ -63,23 +63,15 @@ public class UserService implements UserDetailsService {
         return userRepository.findAll();
     }
 
-    public boolean checkIfExists(User user) {
-        logger.trace("Checking if stored user already exists in database...");
-
-        User userFromDb = userRepository.findByEmail(user.getEmail());
-
-        if (userFromDb != null && user.getId() != userFromDb.getId()) {
-            logger.warn("User with email \"" + userFromDb.getEmail() + "\" already exists in database...");
-            return true;
-        }
-        return false;
-    }
-
     public boolean addUser(User user) {
         logger.trace("Adding new user to database...");
 
-        if (checkIfExists(user))
+        User userFromDb = userRepository.findByEmail(user.getEmail());
+
+        if (userFromDb != null) {
+            logger.warn("User with email \"" + userFromDb.getEmail() + "\" already exists in database...");
             return false;
+        }
 
         logger.trace("Encoding recieved user's password...");
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -133,18 +125,6 @@ public class UserService implements UserDetailsService {
         return true;
     }
 
-    public Map<String, String> getUserErrors(Map<String, String> form) {
-        Map<String, String> errors = new HashMap<>();
-        if (StringUtils.isEmpty(form.get("firstName"))) {
-            errors.put("firstNameError", "Username cannot be empty!");
-        }
-
-        if (StringUtils.isEmpty(form.get("lastName"))) {
-            errors.put("lastNameError", "User surname cannot be empty!");
-        }
-        return errors;
-    }
-
     public void saveUser(User user, Map<String, String> form) {
         logger.trace("Updating user's account...");
 
@@ -172,43 +152,8 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
-    public Map<String, String> getProfileErrors(User user, String firstName, String lastName, String email,
-                                                String password, String confirmPassword, MultipartFile photo) {
-        Map<String, String> errors = new HashMap<>();
-        if (StringUtils.isEmpty(firstName)) {
-            errors.put("firstNameError", "Username cannot be empty!");
-        }
-
-        if (StringUtils.isEmpty(lastName)) {
-            errors.put("lastNameError", "User surname cannot be empty!");
-        }
-
-        if (StringUtils.isEmpty(email)) {
-            errors.put("emailError", "User email cannot be empty!");
-        }
-
-        if (password.length() < 6) {
-            errors.put("passwordError", "User password must be at least 6 characters!");
-        }
-
-        if (confirmPassword.length() < 6) {
-            errors.put("confirmPasswordError", "User password must be at least 6 characters!");
-        }
-
-        if (password != "" && confirmPassword != "" && !password.equals(confirmPassword)) {
-            errors.put("confirmPasswordError", "The entered passwords do not match!");
-        }
-
-        if (user.getAccessLevels().contains(AccessLevel.valueOf("USER"))) {
-            if (!photo.isEmpty() && !photo.getContentType().contains("image")) {
-                errors.put("photoError", "The photo file must be a graphic image!");
-            }
-        }
-        return errors;
-    }
-
-    public boolean updateProfile(User user, String firstName, String lastName, String email, String password,
-                                 String birthDate, String city, String school, MultipartFile photo, String removePhotoFlag) throws IOException {
+    public void updateProfile(User user, String firstName, String lastName, String email, String password,
+                              String birthDate, String city, String school, MultipartFile photo, String removePhotoFlag) throws IOException {
         logger.trace("Updating user's profile...");
 
         user.setFirstName(firstName);
@@ -221,9 +166,6 @@ public class UserService implements UserDetailsService {
                 || (userEmail != null && !userEmail.equals(email));
 
         if (isEmailChanged) {
-            if (checkIfExists(user))
-                return false;
-
             user.setEmail(email);
             user.setActive(false);
             user.setActivationCode(UUID.randomUUID().toString());
@@ -262,7 +204,6 @@ public class UserService implements UserDetailsService {
 
         logger.trace("Saving updated user's profile in database...");
         userRepository.save(user);
-        return true;
     }
 
     public String parseFileData(User user) throws UnsupportedEncodingException {
