@@ -53,7 +53,7 @@ public class SpecialityController {
         if (bindingResult.hasErrors() || form.get("faculty") == "") {
             Map<String, String> errors = ControllerUtils.getErrors(bindingResult);
             model.mergeAttributes(errors);
-            model.addAttribute(form.get("faculty") == "" ? "facultyError" : "", "The faculty of specialty cannot be empty!");
+            model.addAttribute(form.get("faculty") == "" ? "facultyError" : "", "Faculty of specialty cannot be empty!");
             model.addAttribute("faculties", facultyService.findAll());
 
             return "specialityCreator";
@@ -62,7 +62,7 @@ public class SpecialityController {
         boolean specialityExists = !specialityService.createSpeciality(speciality, form);
 
         if (specialityExists) {
-            model.addAttribute("message", "This specialty already exists!");
+            model.addAttribute("specialityExistsMessage", "This specialty already exists!");
             model.addAttribute("faculties", facultyService.findAll());
 
             return "specialityCreator";
@@ -84,7 +84,7 @@ public class SpecialityController {
         if (bindingResult.hasErrors() || form.get("faculty") == "") {
             Map<String, String> errors = ControllerUtils.getErrors(bindingResult);
             model.mergeAttributes(errors);
-            model.addAttribute(form.get("faculty") == "" ? "facultyError" : "", "The faculty of specialty cannot be empty!");
+            model.addAttribute(form.get("faculty") == "" ? "facultyError" : "", "Faculty of specialty cannot be empty!");
             model.addAttribute("speciality", speciality);
             model.addAttribute("faculties", facultyService.findAll());
 

@@ -100,17 +100,17 @@ public class ApplicationService {
                 if (subjectIds.contains(keyId)) {
                     Subject subject = subjectRepository.findById(keyId).get();
                     if (form.get(key).isEmpty()) {
-                        znoMarksErrors.put(key + "Error", "Поле баллы по предмету " + subject.getTitle() + " не может быть пустым!");
+                        znoMarksErrors.put(key + "Error", "Field scores by subject " + subject.getTitle() + " cannot be empty!");
                     }
                     if (!form.get(key).isEmpty() && !form.get(key).matches("\\d+")) {
-                        znoMarksErrors.put(key + "Error", "Баллы по предмету " + subject.getTitle()	+ " должны быть числом!");
+                        znoMarksErrors.put(key + "Error", "Subject scores " + subject.getTitle()	+ " should be a number!");
                     }
                     if (!form.get(key).isEmpty() && form.get(key).matches("\\d+")) {
                         if (Integer.valueOf(form.get(key)) < 100) {
-                            znoMarksErrors.put(key + "Error", "Баллы по предмету " + subject.getTitle()	+ " не могут быть меньше 100!");
+                            znoMarksErrors.put(key + "Error", "Subject scores " + subject.getTitle()	+ " cannot be less than 100!");
                         }
                         if (Integer.valueOf(form.get(key)) > 200) {
-                            znoMarksErrors.put(key + "Error", "Баллы по предмету " + subject.getTitle()	+ " не могут быть больше 200!");
+                            znoMarksErrors.put(key + "Error", "Subject scores " + subject.getTitle()	+ " cannot be more than 200!");
                         }
                     }
                 }
@@ -149,11 +149,11 @@ public class ApplicationService {
         Map<Integer, String> applicationsStatus = new HashMap<>();
         for (Application application : applicationsList) {
             if (!application.getRatingList().isAccepted() && application.getRatingList().getRejectionMessage() == null) {
-                applicationsStatus.put(application.getId(), "Ожидает обработки");
+                applicationsStatus.put(application.getId(), "Pending processing");
             } else if (!application.getRatingList().isAccepted() && application.getRatingList().getRejectionMessage() != null) {
-                applicationsStatus.put(application.getId(), "Отклонена");
+                applicationsStatus.put(application.getId(), "Rejected");
             } else if (application.getRatingList().isAccepted()) {
-                applicationsStatus.put(application.getId(), "Принята");
+                applicationsStatus.put(application.getId(), "Accepted");
             }
         }
         return applicationsStatus;

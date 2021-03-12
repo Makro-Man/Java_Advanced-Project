@@ -1,50 +1,50 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org"
       xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
-      th:with="title='Home page'">
+      th:with="title=#{main}">
 
 <th:block th:replace="fragments/common::commonPage(_, ~{::main})">
     <main>
-        <h3 th:inline="text">Привет,
+        <h3 th:inline="text">[[#{main.hello}]],
             [[${session.user}?${session.user.firstName}:${#authentication.principal.firstName}]]
             [[${session.user}?${session.user.lastName}:${#authentication.principal.lastName}]]!
         </h3>
 
         <div sec:authorize="hasAuthority('USER')">
             <p th:if="${session.user.applicant} == null" class="lead">
-                To get started, tell us about yourself by filling out <a th:href="@{/user/profile}">personal data </a>.
+                [[#{main.user.message1_1}]] <a th:href="@{/user/profile}">[[#{main.user.message1_link}]]</a>.
             </p>
             <p th:if="${session.user?.applicant} AND ${#lists.size(session.specialities) < 5}" class="lead">
-                Now you can <a th:href="@{/application}">apply</a> to participate in the entrance competition for one of the specialties.
+                [[#{main.user.message2_1}]] <a th:href="@{/application}">[[#{main.user.message2_link}]]</a> [[#{main.user.message2_2}]].
             </p>
             <p th:if="${isRejectedAppsPresent}" class="lead">
-                Some previously submitted applications were rejected. Check their statuses <a th:href="@{/application}">здесь</a> and fix the identified shortcomings.
+                [[#{main.user.message3_1}]] <a th:href="@{/application}">[[#{main.user.message3_link}]]</a> [[#{main.user.message3_2}]].
             </p>
             <div th:if="${!session.specialities.isEmpty()}">
                 <p class="lead">
-                    Below you can find the rating of applicants for the selected specialties.
+                    [[#{main.user.message4}]].
                 </p>
                 <div class="row">
                     <div th:each="speciality : ${session.specialities}">
                         <div class="card mx-2 my-2" style="width: 18rem">
                             <div class="card-body">
-                                <span th:if="${speciality.recruitmentCompleted == true}" class="badge badge-pill badge-success">The set is complete!</span>
+                                <span th:if="${speciality.recruitmentCompleted == true}" class="badge badge-pill badge-success">[[#{main.user.recruitment_completed}]]!</span>
                                 <span th:each="entry : ${enrolledApplicants}"
                                       th:if="${speciality.recruitmentCompleted == true} AND ${entry.key.equals(speciality)} AND ${entry.value.contains(session.user?.applicant)}"
-                                      class="badge badge-pill badge-success">You are accepted!</span>
+                                      class="badge badge-pill badge-success">[[#{main.user.admitted}]]!</span>
                                 <span th:each="entry : ${enrolledApplicants}"
                                       th:if="${speciality.recruitmentCompleted == true} AND ${entry.key.equals(speciality)} AND ${!entry.value.contains(session.user?.applicant)}"
-                                      class="badge badge-pill badge-danger">You are not accepted!</span>
+                                      class="badge badge-pill badge-danger">[[#{main.user.rejected}]]!</span>
                                 <h5 class="card-title">[[${speciality.title}]]</h5>
-                                <h6 class="card-subtitle mb-4 text-muted">[[${speciality.faculty.title}]] faculty</h6>
-                                <p class="card-text"><b>Dial plan: </b>[[${speciality.enrollmentPlan}]]</p>
+                                <h6 class="card-subtitle mb-4 text-muted">[[${speciality.faculty.title}]] [[#{main.user.faculty}]]</h6>
+                                <p class="card-text"><b>[[#{main.user.enrollment_plan}]]: </b>[[${speciality.enrollmentPlan}]]</p>
                                 <p class="card-text" th:each="submittedApp : ${submittedApps}" th:if="${submittedApp.key.equals(speciality)}">
-                                    <b>Documents submitted: </b>[[${submittedApp.value}]]
+                                    <b>[[#{main.user.submitted_apps}]]: </b>[[${submittedApp.value}]]
                                 </p>
                                 <p class="card-text" th:each="submittedApp : ${submittedApps}" th:if="${submittedApp.key.equals(speciality)}">
-                                    <b>General competition: </b>[[${#numbers.formatDecimal(#conversions.convert(submittedApp.value, 'Double') / speciality.enrollmentPlan, 1, 2)}]]
+                                    <b>[[#{main.user.general_competition}]]: </b>[[${#numbers.formatDecimal(#conversions.convert(submittedApp.value, 'Double') / speciality.enrollmentPlan, 1, 2)}]]
                                 </p>
-                                <a th:href="@{'/ratingList/speciality?id=' + ${speciality.id}}" class="card-link"> Rating list</a>
+                                <a th:href="@{'/ratingList/speciality?id=' + ${speciality.id}}" class="card-link">[[#{main.user.ranking}]]</a>
                             </div>
                         </div>
                     </div>
@@ -55,7 +55,7 @@
         <div sec:authorize="hasAuthority('ADMIN')">
             <div th:if="${!session.notAcceptedApps.isEmpty()}">
                 <p class="lead">
-                    It is necessary to process the list of new entrance applications from applicants.
+                    [[#{main.admin.message1}]].
                 </p>
                 <div class="row">
                     <div th:each="app : ${session.notAcceptedApps}">
@@ -63,14 +63,14 @@
                             <div class="card-body">
                                 <h5 class="card-title">[[${app.application.applicant.user.firstName}]] [[${app.application.applicant.user.lastName}]]</h5>
                                 <h6 class="card-subtitle mb-4 text-muted">[[${app.application.speciality.title}]]</h6>
-                                <p class="card-text"><b>Subject scores: </b>
+                                <p class="card-text"><b>[[#{main.admin.marks}]]: </b>
                                 <div th:each="znoMark: ${app.application.znoMarks}">
-                                    [[${znoMark.key.title}]]: [[${znoMark.value}]] бал.,
+                                    [[${znoMark.key.title}]]: [[${znoMark.value}]] [[#{main.admin.points}]],
                                 </div>
-                                <div>Average score of the certificate: [[${app.application.attMark}]] score.</div>
+                                <div>[[#{main.admin.grade_point_avg}]]: [[${app.application.attMark}]] [[#{main.admin.points}]]</div>
                                 </p>
-                                <p class="card-text"><b>Rating score: </b>[[${#numbers.formatDecimal(app.totalMark, 3, 2)}]] score.</p>
-                                <a th:href="@{'/application/edit?id=' + ${app.id}}" class="card-link">Open application</a>
+                                <p class="card-text"><b>[[#{main.admin.total_mark}]]: </b>[[${#numbers.formatDecimal(app.totalMark, 3, 2)}]] [[#{main.admin.points}]]</p>
+                                <a th:href="@{'/application/edit?id=' + ${app.id}}" class="card-link">[[#{main.admin.app_open}]]</a>
                             </div>
                         </div>
                     </div>
@@ -78,7 +78,7 @@
             </div>
             <div th:if="${session.notAcceptedApps.isEmpty()}">
                 <p class="lead">
-                    All applications of applicants have been processed. There are no new introductory applications.
+                    [[#{main.admin.message2}]].
                 </p>
             </div>
         </div>

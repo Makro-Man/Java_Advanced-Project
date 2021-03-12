@@ -120,7 +120,7 @@ public class RatingListService {
                 rejectionMessage
         );
 
-        mailSender.send(application.getApplicant().getUser().getEmail(), "Introductory application for specialty \"" + application.getSpeciality().getTitle() + "\" rejected", message);
+        mailSender.send(application.getApplicant().getUser().getEmail(), "Вступительная заявка на специальность \"" + application.getSpeciality().getTitle() + "\" отклонена", message);
     }
 
     public Double calculateTotalMark(Map<Subject, Integer> znoMarks, Integer attMark) {
@@ -212,6 +212,7 @@ public class RatingListService {
 
         Set<Applicant> enrolledApplicants = getEnrolledApplicantsBySpeciality(speciality);
         enrolledApplicants.stream().forEach(applicant -> sendApplicantEnrollmentEmail(applicant, speciality));
+//		enrolledApplicants.stream().forEach(applicant -> System.out.println(applicant.getUser().getFirstName() + " " + applicant.getUser().getLastName() + ", Вы приняты!"));
     }
 
     public Set<Applicant> getEnrolledApplicantsBySpeciality(Speciality speciality) {
@@ -238,7 +239,7 @@ public class RatingListService {
         String message = String.format(
                 "Good day, %s %s! \n\n" +
                         "Congratulations! Based on the results of the competitive selection for the specialty \"%s\" You are among the applicants recommended for admission.\n" +
-                        "Please submit the original documents to the Admissions Office within 10 days.",
+                        "Please submit the original documents to the Admissions Office within 10 days..",
                 applicant.getUser().getFirstName(),
                 applicant.getUser().getLastName(),
                 speciality.getTitle()

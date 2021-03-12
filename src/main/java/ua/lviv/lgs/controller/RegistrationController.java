@@ -59,17 +59,16 @@ public class RegistrationController {
         }
 
         if (user.getPassword() != null && !user.getPassword().equals(confirmPassword)) {
-            model.addAttribute("confirmPasswordError", "The entered passwords do not match!");
+            model.addAttribute("confirmPasswordError2", "The entered passwords do not match!");
             return "registration";
         }
 
         if (!userService.addUser(user)) {
-            model.addAttribute("messageType", "danger");
-            model.addAttribute("message", "This user already exists!");
+            model.addAttribute("userExistsMessage", "This user already exists!");
             return "registration";
         }
 
-        redir.addFlashAttribute("message", "To activate the user, follow the link in the letter sent to the email address you specified!");
+        redir.addFlashAttribute("activationMessage", "To activate the user, follow the link in the letter sent to the email address you specified!");
         return "redirect:/login/";
     }
 
@@ -78,11 +77,9 @@ public class RegistrationController {
         boolean isActivated = userService.activateUser(code);
 
         if (isActivated) {
-            model.addAttribute("messageType", "success");
-            model.addAttribute("message", "User successfully activated!");
+            model.addAttribute("activationSucceedMessage", "User successfully activated!");
         } else {
-            model.addAttribute("messageType", "danger");
-            model.addAttribute("message", "Activation code not found!");
+            model.addAttribute("activationFailedMessage", "Activation code not found!");
         }
 
         return "login";

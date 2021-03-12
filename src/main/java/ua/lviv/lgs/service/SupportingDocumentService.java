@@ -69,7 +69,7 @@ public class SupportingDocumentService {
 
         for (MultipartFile file : supportingDocuments) {
             if (file.getBytes().length > 8388608) {
-                supportingDocumentErrors.put("supportingDocumentError", "Размер файла не может быть более 8 Мб!");
+                supportingDocumentErrors.put("supportingDocumentError", "The file size cannot be more than 8 MB!");
                 break;
             }
         }
