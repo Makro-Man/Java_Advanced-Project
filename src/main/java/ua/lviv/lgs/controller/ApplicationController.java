@@ -9,6 +9,10 @@ import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -63,7 +67,7 @@ public class ApplicationController {
 
     @PreAuthorize("hasAuthority('USER')")
     @PostMapping("/create")
-    public String createApplication(@RequestParam Map<String, String> form,	@RequestParam("files") MultipartFile[] supportingDocuments,
+    public String createApplication(@RequestParam Map<String, String> form,	@RequestParam("supportingDocument") MultipartFile[] supportingDocuments,
                                     @Valid Application application, BindingResult bindingResult, Model model) throws IOException {
         Map<String, String> znoMarksErrors = applicationService.getZnoMarksErrors(form);
         Map<String, String> supportingDocumentErrors = supportingDocumentService.getSupportingDocumentErrors(supportingDocuments);
@@ -73,7 +77,7 @@ public class ApplicationController {
             model.mergeAttributes(errors);
             model.mergeAttributes(supportingDocumentErrors);
             model.addAttribute(!znoMarksErrors.isEmpty() ? "znoMarksErrorMessage" : "", "Errors were found when filling in points for UPE: " +
-                    znoMarksErrors.values() + ". Попробуйте заполнить форму еще раз!");
+                    znoMarksErrors.values() + ". Try filling out the form again!");
             model.addAttribute(form.get("speciality").isEmpty() ? "specialityError" : "", "Specialty field cannot be empty!");
             model.addAttribute("specialities", specialityService.findByRecruitmentCompletedFalse());
 
@@ -93,7 +97,14 @@ public class ApplicationController {
     }
 
     @GetMapping("/edit")
-    public String viewEditForm(@RequestParam("id") Application application, Model model) {
+    public String viewEditForm(@RequestParam("id") Application application, HttpSession session, Model model) {
+        User currentUser = ((User) session.getAttribute("user"));
+        if (currentUser.getAccessLevels().contains(AccessLevel.valueOf("USER"))
+                && !application.getApplicant().getId().equals(currentUser.getId())
+                || application.getRatingList().isAccepted()) {
+            return "redirect:/403";
+        }
+
         model.addAttribute("aplication", application);
         model.addAttribute("specialities", specialityService.findByRecruitmentCompletedFalse());
         model.addAttribute("downloadURI", ServletUriComponentsBuilder.fromCurrentContextPath().path("/downloadFile/").toUriString());
@@ -103,7 +114,7 @@ public class ApplicationController {
 
     @PostMapping("/edit")
     public String updateApplication(@RequestParam("id") Application application, @RequestParam Map<String, String> form,
-                                    @RequestParam("files") MultipartFile[] supportingDocuments, HttpSession session, @Valid Application updatedApplication,
+                                    @RequestParam("supportingDocument") MultipartFile[] supportingDocuments, HttpSession session, @Valid Application updatedApplication,
                                     BindingResult bindingResult, Model model) throws IOException {
         Map<String, String> znoMarksErrors = applicationService.getZnoMarksErrors(form);
         Map<String, String> supportingDocumentErrors = supportingDocumentService.getSupportingDocumentErrors(supportingDocuments);
@@ -120,7 +131,16 @@ public class ApplicationController {
             return "applicationEditor";
         }
 
-        applicationService.updateApplication(updatedApplication, form, supportingDocuments);
+        boolean applicationExists = !applicationService.updateApplication(updatedApplication, form, supportingDocuments);
+
+        if (applicationExists) {
+            model.addAttribute("applicationExistsMessage", "The application for the chosen specialty already exists!");
+            model.addAttribute("aplication", application);
+            model.addAttribute("specialities", specialityService.findByRecruitmentCompletedFalse());
+            model.addAttribute("downloadURI", ServletUriComponentsBuilder.fromCurrentContextPath().path("/downloadFile/").toUriString());
+
+            return "applicationEditor";
+        }
 
         if (((User) session.getAttribute("user")).getAccessLevels().contains(AccessLevel.valueOf("ADMIN"))) {
             return "redirect:/application/notAcceptedApps";
@@ -131,7 +151,14 @@ public class ApplicationController {
 
     @PreAuthorize("hasAuthority('USER')")
     @GetMapping("/delete")
-    public String deleteApplication(@RequestParam("id") Application application) {
+    public String deleteApplication(@RequestParam("id") Application application, HttpSession session) {
+        User currentUser = ((User) session.getAttribute("user"));
+        if (currentUser.getAccessLevels().contains(AccessLevel.valueOf("USER"))
+                && !application.getApplicant().getId().equals(currentUser.getId())
+                || application.getSpeciality().isRecruitmentCompleted()) {
+            return "redirect:/403";
+        }
+
         applicationService.deleteApplication(application);
 
         return "redirect:/application";
@@ -139,8 +166,8 @@ public class ApplicationController {
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/notAcceptedApps")
-    public String viewNotAcceptedApps(HttpSession session) {
-        List<RatingList> notAcceptedApps = ratingListService.findNotAcceptedApps();
+    public String viewNotAcceptedApps(HttpSession session, @PageableDefault(size = 5, sort = "application_id", direction = Sort.Direction.ASC) Pageable pageable) {
+        Page<RatingList> notAcceptedApps = ratingListService.findNotAcceptedApps(pageable);
 
         session.setAttribute("notAcceptedApps", notAcceptedApps);
 

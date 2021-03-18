@@ -28,13 +28,18 @@
                     </div>
                     <div th:text="|#{NA_aplication.grade_point_avg}: ${app.application.attMark} #{NA_aplication.points}|"></div>
                 </td>
-                <td th:text="|${#numbers.formatDecimal(app.totalMark, 3, 2)} #{NA_aplication.points}|"/>
+                <td>
+                    <a th:href="@{'/ratingList/totalMarkCalculation?applicant_id=' + ${app.application.applicant.id} + '&speciality_id=' + ${app.application.speciality.id}}">
+                        [[${#numbers.formatDecimal(app.totalMark, 3, 2)}]] [[#{NA_aplication.points}]]
+                    </a>
+                </td>
                 <td>
                     <a th:href="@{'/application/edit?id=' + ${app.id}}">[[#{NA_aplication.open}]]</a>
                 </td>
             </tr>
             </tbody>
         </table>
+        <th:block th:replace="fragments/pager::commonPager(${session.notAcceptedApps}, '/application/notAcceptedApps', ${ {3, 5, 10, 20, 50} })"/>
     </main>
 </th:block>
 

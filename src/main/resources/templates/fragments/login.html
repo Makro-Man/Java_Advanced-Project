@@ -30,6 +30,7 @@
                 <input th:class="${firstNameError}?'form-control is-invalid':'form-control'"
                        type="text" name="firstName" th:value="${user}?${user.firstName}" th:placeholder="#{registration.first_name}"/>
                 <div th:if="${firstNameError}" class="invalid-feedback" th:text="#{firstNameError}"></div>
+                <div id="firstNameError"></div>
             </div>
         </div>
         <div class="form-group row" th:if="${!isLoginForm}">
@@ -38,6 +39,7 @@
                 <input th:class="${lastNameError}?'form-control is-invalid':'form-control'"
                        type="text" name="lastName" th:value="${user}?${user.lastName}" th:placeholder="#{registration.last_name}"/>
                 <div th:if="${lastNameError}" class="invalid-feedback" th:text="#{lastNameError}"></div>
+                <div id="lastNameError"></div>
             </div>
         </div>
         <div class="form-group row">
@@ -46,6 +48,7 @@
                 <input th:class="${emailError}?'form-control is-invalid':'form-control'"
                        type="text" th:name="${isLoginForm}?username:email" th:value="${user}?${user.email}" th:placeholder="#{login.email}"/>
                 <div th:if="${emailError}" class="invalid-feedback" th:text="#{emailError}"></div>
+                <div id="emailError"></div>
             </div>
         </div>
         <div class="form-group row">
@@ -53,7 +56,8 @@
             <div class="col-sm-6">
                 <input th:class="${passwordError}?'form-control is-invalid':'form-control'"
                        type="password" name="password" th:placeholder="#{login.password}"/>
-                <div th:if="${passwordError}" class="invalid-feedback" th:text="#{passwordError}"></div>
+                <div th:if="${passwordError}" class="invalid-feedback" th:text="#{passwordLengthError}"></div>
+                <div id="passwordError"></div>
             </div>
         </div>
         <div class="form-group row" th:if="${!isLoginForm}">
@@ -63,6 +67,7 @@
                        type="password" name="confirmPassword" th:placeholder="#{registration.confirm_password}"/>
                 <div th:if="${confirmPasswordError}" class="invalid-feedback" th:text="#{confirmPasswordError}"></div>
                 <div th:if="${confirmPasswordError2}" class="invalid-feedback" th:text="#{confirmPasswordError2}"></div>
+                <div id="confirmPasswordError"></div>
             </div>
         </div>
         <div class="form-check" th:if="${isLoginForm}">
@@ -73,7 +78,7 @@
             <div class="g-recaptcha" data-sitekey="6LdnEL4UAAAAAM6h1YjSYgcOdN6BSAZBhU8pyM-m"></div>
             <div th:if="${captchaError}" class="alert alert-danger" role="alert" style="width: 302px;" th:text="#{captchaError}"></div>
         </div>
-        <button class="btn btn-primary mt-3" type="submit">[[${isLoginForm}?#{login.sign_in}:#{registration.sign_up}]]</button>
+        <button class="btn btn-primary mt-3" type="submit" id="submit">[[${isLoginForm}?#{login.sign_in}:#{registration.sign_up}]]</button>
         <div><a th:if="${isLoginForm}" href="/registration">[[#{login.new_user}]]</a></div>
     </form>
 </main>

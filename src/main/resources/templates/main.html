@@ -24,7 +24,7 @@
                 <p class="lead">
                     [[#{main.user.message4}]].
                 </p>
-                <div class="row">
+                <div class="row" id="admittedSpecialities">
                     <div th:each="speciality : ${session.specialities}">
                         <div class="card mx-2 my-2" style="width: 18rem">
                             <div class="card-body">
@@ -57,7 +57,7 @@
                 <p class="lead">
                     [[#{main.admin.message1}]].
                 </p>
-                <div class="row">
+                <div class="row" id="notAcceptedApps">
                     <div th:each="app : ${session.notAcceptedApps}">
                         <div class="card mx-2 my-2" style="width: 18rem">
                             <div class="card-body">
@@ -69,12 +69,17 @@
                                 </div>
                                 <div>[[#{main.admin.grade_point_avg}]]: [[${app.application.attMark}]] [[#{main.admin.points}]]</div>
                                 </p>
-                                <p class="card-text"><b>[[#{main.admin.total_mark}]]: </b>[[${#numbers.formatDecimal(app.totalMark, 3, 2)}]] [[#{main.admin.points}]]</p>
+                                <p class="card-text"><b>[[#{main.admin.total_mark}]]: </b>
+                                    <a th:href="@{'/ratingList/totalMarkCalculation?applicant_id=' + ${app.application.applicant.id} + '&speciality_id=' + ${app.application.speciality.id}}">
+                                        [[${#numbers.formatDecimal(app.totalMark, 3, 2)}]] [[#{main.admin.points}]]
+                                    </a>
+                                </p>
                                 <a th:href="@{'/application/edit?id=' + ${app.id}}" class="card-link">[[#{main.admin.app_open}]]</a>
                             </div>
                         </div>
                     </div>
                 </div>
+                <th:block th:replace="fragments/pager::commonPager(${session.notAcceptedApps}, '/main', ${ {3, 6, 9, 12, 24} })"/>
             </div>
             <div th:if="${session.notAcceptedApps.isEmpty()}">
                 <p class="lead">

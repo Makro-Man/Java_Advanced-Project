@@ -22,6 +22,7 @@
      */
     var messageResource = (function(){
 
+
         var properties,
             DEFAULT_MODULE_NAME = '_default',
             DEFAULT_EXTENSION = '.properties',
@@ -33,6 +34,7 @@
             ajaxFunction,
             validConfiguration = false,
             debugMode = false;
+
         /**
          * Default file name resolver.
          *
@@ -281,6 +283,7 @@
                         }
                     }
                 }else{
+                    // only one module to load
                     if (!isModuleLoaded(validModule, validLocale)){
                         modulesToLoad.push(validModule);
                     }
@@ -377,7 +380,6 @@
             while (k < len) {
 
                 var kValue;
-
                 if (k in O) {
                     kValue = O[k];
                     callback.call(T, kValue, k, O);

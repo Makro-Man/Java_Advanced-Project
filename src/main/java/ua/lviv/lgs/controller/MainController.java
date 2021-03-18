@@ -9,6 +9,9 @@ import java.util.Set;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -35,7 +38,7 @@ public class MainController {
     private RatingListService ratingListService;
 
     @GetMapping
-    public String viewMainPage(HttpSession session, Model model) throws UnsupportedEncodingException {
+    public String viewMainPage(HttpSession session, Model model, @PageableDefault(size = 6, sort = "application_id", direction = Sort.Direction.ASC) Pageable pageable) throws UnsupportedEncodingException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) auth.getPrincipal();
         User userFromDb = userService.findById(user.getId());
@@ -58,7 +61,7 @@ public class MainController {
         }
 
         if (userFromDb.getAccessLevels().contains(AccessLevel.valueOf("ADMIN"))) {
-            session.setAttribute("notAcceptedApps", ratingListService.findNotAcceptedApps());
+            session.setAttribute("notAcceptedApps", ratingListService.findNotAcceptedApps(pageable));
         }
 
         return "main";

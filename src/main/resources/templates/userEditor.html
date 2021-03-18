@@ -15,6 +15,7 @@
                     <input th:class="${firstNameError}?'form-control is-invalid':'form-control'"
                            type="text" name="firstName" th:value="${user.firstName}" th:placeholder="#{user.first_name}"/>
                     <div th:if="${firstNameError}" class="invalid-feedback" th:text="#{firstNameError}"></div>
+                    <div id="firstNameError"></div>
                 </div>
             </div>
             <div class="form-group row">
@@ -23,6 +24,7 @@
                     <input th:class="${lastNameError}?'form-control is-invalid':'form-control'"
                            type="text" name="lastName" th:value="${user.lastName}" th:placeholder="#{user.last_name}"/>
                     <div th:if="${lastNameError}" class="invalid-feedback" th:text="#{lastNameError}"></div>
+                    <div id="lastNameError"></div>
                 </div>
             </div>
             <div class="form-group row">
@@ -44,8 +46,11 @@
                     <label class="form-check-label">[[${accessLevel}]]</label>
                 </div>
             </div>
-            <button class="btn btn-primary mt-3" type="submit">[[#{user.save}]]</button>
+            <button class="btn btn-primary mt-3" type="submit" id="submit">[[#{user.save}]]</button>
         </form>
+        <script src="../js/messageResource.js"></script>
+        <script src="../js/commonUtils.js"></script>
+        <script src="../js/userEditor.js"></script>
     </main>
 </th:block>
 

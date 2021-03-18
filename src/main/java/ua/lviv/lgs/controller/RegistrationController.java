@@ -69,7 +69,7 @@ public class RegistrationController {
         }
 
         redir.addFlashAttribute("activationMessage", "To activate the user, follow the link in the letter sent to the email address you specified!");
-        return "redirect:/login/";
+        return "activationMessage";
     }
 
     @GetMapping("/activate/{code}")

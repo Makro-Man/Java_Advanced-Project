@@ -31,9 +31,9 @@
                     <div th:text="|#{aplication.grade_point_avg}: ${aplication.attMark} #{aplication.points}|"></div>
                 </td>
                 <td th:each="status : ${applicationsStatus}" th:if="${status.key.equals(aplication.id)}" th:switch="${status.value}">
-                    <span th:case="'Pending processing'" class="badge badge-pill badge-warning">[[#{aplication.status.processing}]]</span>
-                    <span th:case="'Rejected'" class="badge badge-pill badge-danger">[[#{aplication.status.rejected}]]</span>
-                    <span th:case="'Accepted'" class="badge badge-pill badge-success">[[#{aplication.status.accepted}]]</span>
+                    <span th:case="'Ожидает обработки'" class="badge badge-pill badge-warning">[[#{aplication.status.processing}]]</span>
+                    <span th:case="'Отклонена'" class="badge badge-pill badge-danger">[[#{aplication.status.rejected}]]</span>
+                    <span th:case="'Принята'" class="badge badge-pill badge-success">[[#{aplication.status.accepted}]]</span>
                 </td>
                 <td>
 						<span th:unless="${aplication.ratingList.accepted}">

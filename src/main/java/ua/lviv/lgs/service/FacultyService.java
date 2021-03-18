@@ -1,5 +1,6 @@
 package ua.lviv.lgs.service;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import ua.lviv.lgs.dao.FacultyRepository;
 import ua.lviv.lgs.dao.SubjectRepository;
+import ua.lviv.lgs.domain.Application;
 import ua.lviv.lgs.domain.Faculty;
 import ua.lviv.lgs.domain.Subject;
 
@@ -25,6 +27,8 @@ public class FacultyService {
     private FacultyRepository facultyRepository;
     @Autowired
     private SubjectRepository subjectRepository;
+    @Autowired
+    private ApplicationService applicationService;
 
     public List<Faculty> findAll() {
         logger.trace("Getting all faculties from database...");
@@ -32,15 +36,23 @@ public class FacultyService {
         return facultyRepository.findAll();
     }
 
-    public boolean createFaculty(Faculty faculty, Map<String, String> form) {
-        logger.trace("Adding new faculty to database...");
+    public boolean checkIfExists(Faculty faculty) {
+        logger.trace("Checking if stored faculty already exists in database...");
 
         Optional<Faculty> facultyFromDb = facultyRepository.findByTitle(faculty.getTitle());
 
-        if (facultyFromDb.isPresent()) {
+        if (facultyFromDb.isPresent() && faculty.getId() != facultyFromDb.get().getId()) {
             logger.warn("Faculty with title \"" + facultyFromDb.get().getTitle() + "\" already exists in database...");
-            return false;
+            return true;
         }
+        return false;
+    }
+
+    public boolean createFaculty(Faculty faculty, Map<String, String> form) {
+        logger.trace("Adding new faculty to database...");
+
+        if (checkIfExists(faculty))
+            return false;
 
         logger.trace("Saving new faculty in database...");
         facultyRepository.save(faculty);
@@ -48,14 +60,21 @@ public class FacultyService {
         return true;
     }
 
-    public void updateFaculty(Faculty faculty, Map<String, String> form) {
+    public boolean updateFaculty(Faculty faculty, Map<String, String> form) {
         logger.trace("Updating faculty in database...");
+
+        if (checkIfExists(faculty))
+            return false;
 
         Set<Subject> examSubjects = parseExamSubjects(form);
         faculty.setExamSubjects(examSubjects);
 
+        Map<Subject, Double> subjectCoeffs = parseSubjectCoeffs(form);
+        faculty.setSubjectCoeffs(subjectCoeffs);
+
         logger.trace("Saving updated faculty in database...");
         facultyRepository.save(faculty);
+        return true;
     }
 
     public void deleteFaculty(Faculty faculty) {
@@ -76,5 +95,42 @@ public class FacultyService {
             }
         }
         return examSubjects;
+    }
+
+    public Map<Subject, Double> parseSubjectCoeffs(Map<String, String> form) {
+        logger.trace("Parsing subjects coefficients from Form Strings and mapping to Java Collection of objects...");
+
+        Set<String> subjectTitles = subjectRepository.findAll().stream().map(Subject::getTitle).collect(Collectors.toSet());
+        Map<Subject, Double> subjectCoeffs = new HashMap<>();
+
+        for (String key : form.keySet()) {
+            if (subjectTitles.contains(form.get(key))) {
+                for (String key2 : form.keySet()) {
+                    if (key2.equals("coeff" + key)) {
+                        subjectCoeffs.put(new Subject(Integer.valueOf(key), form.get(key)), Double.valueOf(form.get(key2)));
+                    }
+                }
+            }
+        }
+        return subjectCoeffs;
+    }
+
+    public Map<Faculty, Integer> countApplicationsByFaculty() {
+        logger.trace("Counting number of applications by Faculty...");
+
+        List<Faculty> facultyList = findAll();
+        List<Application> applicationList = applicationService.findAll();
+        Map<Faculty, Integer> applicationsByFaculty = new HashMap<>();
+
+        for (Faculty faculty : facultyList) {
+            Integer appCounter = 0;
+            for (Application application : applicationList) {
+                if (application.getSpeciality().getFaculty().equals(faculty)) {
+                    appCounter += 1;
+                }
+            }
+            applicationsByFaculty.put(faculty, appCounter);
+        }
+        return applicationsByFaculty;
     }
 }

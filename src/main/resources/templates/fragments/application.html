@@ -35,6 +35,7 @@
                     </option>
                 </select>
                 <div th:if="${specialityError}" class="invalid-feedback" th:text="#{specialityError}"></div>
+                <div id="specialityError"></div>
             </div>
         </div>
         <div th:if="${!isEditForm}" id="subjects"></div>
@@ -44,12 +45,14 @@
                 <div class="form-group row">
                     <label class="col-sm-2 col-form-label">[[${znoMark.key.title}]]: </label>
                     <div class="col-sm-6" sec:authorize="hasAuthority('USER')">
-                        <input th:class="${subject__${znoMark.key.id}__Error}?'form-control is-invalid':'form-control'"
-                               type="text" th:name="|subject${znoMark.key.id}|" th:value="${znoMark.value}" th:placeholder="${znoMark.key.title}"/>
+                        <input th:class="${subject__${znoMark.key.id}__Error}?'subject form-control is-invalid':'subject form-control'"
+                               type="number" step="1" min="100" max="200" th:name="|subject${znoMark.key.id}|"
+                               th:value="${znoMark.value}" th:placeholder="${znoMark.key.title}"/>
                         <div th:if="${subject__${znoMark.key.id}__Error}" class="invalid-feedback" th:text="${subject__${znoMark.key.id}__Error}"></div>
+                        <div th:id="|subject${znoMark.key.id}Error|"></div>
                     </div>
                     <div class="col-sm-6" sec:authorize="hasAuthority('ADMIN')">
-                        <input class="form-control" type="text" th:name="|subject${znoMark.key.id}|" th:value="${znoMark.value}" readonly/>
+                        <input class="form-control" type="number" th:name="|subject${znoMark.key.id}|" th:value="${znoMark.value}" readonly/>
                     </div>
                 </div>
             </div>
@@ -58,17 +61,21 @@
             <label class="col-sm-2 col-form-label">[[#{aplication.grade_point_avg}]]: </label>
             <div class="col-sm-6" sec:authorize="hasAuthority('USER')">
                 <input th:class="${attMarkError}?'form-control is-invalid':'form-control'"
-                       type="text" name="attMark" th:value="${aplication}?*{attMark}" th:placeholder="#{aplication.grade_point_avg}"/>
+                       type="number" step="1" min="100" max="200" name="attMark" th:value="${aplication}?*{attMark}"
+                       th:placeholder="#{aplication.grade_point_avg}"/>
                 <div th:if="${attMarkError}" class="invalid-feedback" th:text="#{attMarkError}"></div>
+                <div id="attMarkError"></div>
             </div>
             <div class="col-sm-6" sec:authorize="hasAuthority('ADMIN')">
-                <input class="form-control" type="text" name="attMark" th:value="${aplication}?*{attMark}" readonly/>
+                <input class="form-control" type="number" name="attMark" th:value="${aplication}?*{attMark}" readonly/>
             </div>
         </div>
         <div class="form-group row" sec:authorize="hasAuthority('ADMIN')">
             <label class="col-sm-2 col-form-label"><b>[[#{aplication.total_mark}]]: </b></label>
             <div class="col-sm-6">
-                <input class="form-control-plaintext" type="text" name="totalMark" th:value="${#numbers.formatDecimal(aplication.ratingList.totalMark, 3, 2)}" readonly/>
+                <a class="form-control-plaintext" th:href="@{'/ratingList/totalMarkCalculation?applicant_id=' + ${aplication.applicant.id} + '&speciality_id=' + ${aplication.speciality.id}}">
+                    [[${#numbers.formatDecimal(aplication.ratingList.totalMark, 3, 2)}]]
+                </a>
             </div>
         </div>
         <div class="form-group row">
@@ -76,10 +83,11 @@
             <div class="col-sm-6">
                 <div class="custom-file">
                     <input th:class="${supportingDocumentError}?'custom-file-input is-invalid':'custom-file-input'"
-                           type="file" id="files" name="files" multiple sec:authorize="hasAuthority('USER')"
+                           type="file" id="files" name="supportingDocument" multiple sec:authorize="hasAuthority('USER')"
                            onchange="handleFileMultipartInputPlaceholder()" />
                     <label for="customFile" class="custom-file-label text-muted text-truncate" sec:authorize="hasAuthority('USER')">[[#{aplication.supporting_documents_placeholder}]]</label>
                     <div th:if="${supportingDocumentError}" class="invalid-feedback" th:text="#{supportingDocumentError}"></div>
+                    <div id="supportingDocumentError"></div>
                     <small class="form-text text-muted" id="filesList"></small>
                     <small th:if="${isEditForm}" class="form-text text-muted ml-4" th:each="supDoc: ${aplication?.supportingDocuments}">
                         <input class="form-check-input" type="checkbox" th:name="|delete${supDoc.id}|" th:title="#{aplication.supporting_documents_delete}" sec:authorize="hasAuthority('USER')"/>
@@ -92,9 +100,9 @@
         </div>
         <div sec:authorize="hasAuthority('ADMIN')">
             <div class="form-group row">
-                <div class="col-sm-2 mt-2">
+                <div class="col-sm-2 mt-2" style="height: 38px">
                     <label class="form-check-label">
-                        <input class="form-check-input" type="checkbox" name="accept" id="accept" onclick="showRejectionMessage()" />
+                        <input class="form-check-input" type="checkbox" name="accept" id="accept"/>
                         <b>[[#{aplication.accept}]]</b>
                     </label>
                 </div>
@@ -103,75 +111,11 @@
                 </div>
             </div>
         </div>
-        <button class="btn btn-primary my-3" type="submit">[[${isEditForm}?#{aplication.save}:#{aplication.create}]]</button>
+        <button class="btn btn-primary my-3" type="submit" id="submit">[[${isEditForm}?#{aplication.save}:#{aplication.create}]]</button>
     </form>
-    <script src="../messageResource.js"></script>
-    <script>
-        messageResource.init({ filePath: '../' });
-        var currentLocale = localStorage.getItem('locales');
-        messageResource.load('message', function() {}, currentLocale);
-
-        function viewSubjectsBySpeciality() {
-            var speciality = $("select[name='speciality']").val();
-            var subjects = null;
-
-            if (speciality != '') {
-                jQuery.get('../subjectBySpeciality', {id: speciality}, function(data) {
-                    if (data !== '') {
-                        subjects = data;
-                    }
-                }).done(
-                    function() {
-                        var formContent = '<h5>' + messageResource.get('aplication.zno_marks', 'message', currentLocale) + ':</h5>';
-                        jQuery.each(subjects, function(i, value) {
-                            formContent +=
-                                "<div class='form-group row'>"
-                                + "<label class='col-sm-2 col-form-label'>" + value.title + ": </label>"
-                                + "<div class='col-sm-6'>"
-                                + "<input class='form-control'"
-                                + "type='text' name='subject" + value.id + "' placeholder='" + value.title +"'/>"
-                                + "</div>"
-                                + "</div>"
-                        });
-
-                        $('#subjects').html(formContent);
-                    });
-            } else {
-                $('#subjects').html('');
-            }
-        }
-
-        function handleFileMultipartInputPlaceholder() {
-            var filesInput = $("input[name='files']");
-
-            filesInput.next('.custom-file-label').addClass('selected').html(
-                filesInput[0].files.length == 0 ? messageResource.get('aplication.supporting_documents_placeholder', 'message', currentLocale) :
-                    ( filesInput[0].files.length == 1 ? filesInput.val().split('\\').pop() :
-                        messageResource.get('aplication.supporting_documents_files_uploaded', 'message', currentLocale) + ': ' + filesInput[0].files.length ) )
-        }
-
-        function handleFileSelect(event) {
-            var files = event.target.files;
-
-            var output = [];
-            for (var i = 0, file; file = files[i]; i++) {
-                output.push('<li><strong>', file.name, '</strong> (', file.type || 'n/a', ') - ', file.size, ' ',
-                    messageResource.get('aplication.supporting_documents_bytes', 'message', currentLocale), '</li>');
-            }
-
-            document.getElementById('filesList').innerHTML = '<ul>' + output.join('') + '</ul>';
-        }
-
-        document.getElementById('files').addEventListener('change',	handleFileSelect, false);
-
-        function showRejectionMessage() {
-            var checkbox = document.getElementById('accept');
-            var rejectionMessage = document.getElementById('rejectionMessage');
-
-            var state = (checkbox.checked) ? "none" : "block";
-            rejectionMessage.style.display = state;
-        }
-    </script>
+    <script src="../js/messageResource.js"></script>
+    <script src="../js/commonUtils.js"></script>
+    <script src="../js/application.js"></script>
 </main>
 
 </html>

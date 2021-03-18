@@ -44,6 +44,4 @@ public class MailConfig {
 
         return mailSender;
     }
-
-//  для gmail включить https://myaccount.google.com/lesssecureapps
 }

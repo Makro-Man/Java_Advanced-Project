@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import ua.lviv.lgs.dao.ApplicantRepository;
@@ -55,7 +57,7 @@ public class RatingListService {
 
         ratingList.setId(application.getId());
 
-        Double totalMark = calculateTotalMark(application.getZnoMarks(), application.getAttMark());
+        Double totalMark = calculateTotalMark(application.getSpeciality().getFaculty().getSubjectCoeffs(), application.getZnoMarks(), application.getAttMark());
         ratingList.setTotalMark(totalMark);
 
         checkApplicationForRejectionMessage(application, form, ratingList);
@@ -98,7 +100,7 @@ public class RatingListService {
         String message = String.format(
                 "Good day, %s %s! \n\n" +
                         "Your introductory specialty application \"%s\" accepted by the administrator.\n" +
-                        "You can track the results of the competitive selection for the chosen specialty in your personal account.",
+                        "You can track the results of the competitive selection in the chosen specialty in your personal account.",
                 application.getApplicant().getUser().getFirstName(),
                 application.getApplicant().getUser().getLastName(),
                 application.getSpeciality().getTitle()
@@ -120,23 +122,29 @@ public class RatingListService {
                 rejectionMessage
         );
 
-        mailSender.send(application.getApplicant().getUser().getEmail(), "Вступительная заявка на специальность \"" + application.getSpeciality().getTitle() + "\" отклонена", message);
+        mailSender.send(application.getApplicant().getUser().getEmail(), "Introductory application for specialty \"" + application.getSpeciality().getTitle() + "\" rejected", message);
     }
 
-    public Double calculateTotalMark(Map<Subject, Integer> znoMarks, Integer attMark) {
+    public Double calculateTotalMark(Map<Subject, Double> subjectCoeffs, Map<Subject, Integer> znoMarks, Integer attMark) {
         logger.trace("Calculating application total mark...");
 
-        Integer i = 1;
-        Double totalMark = Double.valueOf(attMark);
+        Double totalZnoMark = calculateTotalZnoMark(subjectCoeffs, znoMarks);
+        return RatingList.znoCoeff * totalZnoMark + RatingList.attMarkCoeff * Double.valueOf(attMark);
+    }
 
-        for (Integer znoMark : znoMarks.values()) {
-            i += 1;
-            totalMark += znoMark;
+    public Double calculateTotalZnoMark(Map<Subject, Double> subjectCoeffs, Map<Subject, Integer> znoMarks) {
+        logger.trace("Calculating total ZNO mark...");
+
+        Double totalZnoMark = 0.0;
+
+        for (Entry<Subject, Integer> entry : znoMarks.entrySet()) {
+            Double subjectCoeff = subjectCoeffs.get(entry.getKey());
+            Integer znoSubjectMark = entry.getValue();
+            Double znoMark = subjectCoeff * Double.valueOf(znoSubjectMark);
+
+            totalZnoMark += znoMark;
         }
-
-        totalMark = totalMark/i;
-
-        return totalMark;
+        return totalZnoMark;
     }
 
     public Map<Speciality, Integer> parseNumberOfApplicationsBySpeciality() {
@@ -201,10 +209,10 @@ public class RatingListService {
                 .collect(Collectors.toCollection(TreeSet::new));
     }
 
-    public List<RatingList> findNotAcceptedApps() {
+    public Page<RatingList> findNotAcceptedApps(Pageable pageable) {
         logger.trace("Getting all not accepted applications from database...");
 
-        return ratingListRepository.findByAcceptedFalseAndRejectionMessageIsNull();
+        return ratingListRepository.findByAcceptedFalseAndRejectionMessageIsNull(pageable);
     }
 
     public void announceRecruitmentResultsBySpeciality(Speciality speciality) {
@@ -239,7 +247,7 @@ public class RatingListService {
         String message = String.format(
                 "Good day, %s %s! \n\n" +
                         "Congratulations! Based on the results of the competitive selection for the specialty \"%s\" You are among the applicants recommended for admission.\n" +
-                        "Please submit the original documents to the Admissions Office within 10 days..",
+                        "Please submit the original documents to the Admissions Office within 10 days.",
                 applicant.getUser().getFirstName(),
                 applicant.getUser().getLastName(),
                 speciality.getTitle()

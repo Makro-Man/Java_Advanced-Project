@@ -19,6 +19,7 @@ import ua.lviv.lgs.dao.SubjectRepository;
 import ua.lviv.lgs.domain.Applicant;
 import ua.lviv.lgs.domain.Application;
 import ua.lviv.lgs.domain.RatingList;
+import ua.lviv.lgs.domain.Speciality;
 import ua.lviv.lgs.domain.Subject;
 import ua.lviv.lgs.domain.SupportingDocument;
 
@@ -35,23 +36,43 @@ public class ApplicationService {
     @Autowired
     private RatingListService ratingListService;
 
+    public List<Application> findAll() {
+        logger.trace("Getting all applications from database...");
+
+        return applicationRepository.findAll();
+    }
+
     public List<Application> findByApplicant(Applicant applicant) {
         logger.trace("Getting all applications by specified applicant from database...");
 
         return applicationRepository.findByApplicant(applicant);
     }
 
-    public boolean createApplication(Application application, Map<String, String> form, MultipartFile[] supportingDocuments) throws IOException {
-        logger.trace("Adding new application to database...");
+    public Application findByApplicantAndSpeciality(Applicant applicant, Speciality speciality) {
+        logger.trace("Getting application by specified applicant and speciality from database...");
+
+        return applicationRepository.findByApplicantAndSpeciality(applicant, speciality).get();
+    }
+
+    public boolean checkIfExists(Application application) {
+        logger.trace("Checking if stored application already exists in database...");
 
         Optional<Application> applicationFromDb = applicationRepository.findByApplicantAndSpeciality(application.getApplicant(), application.getSpeciality());
 
-        if (applicationFromDb.isPresent()) {
+        if (applicationFromDb.isPresent() && application.getId() != applicationFromDb.get().getId()) {
             logger.warn("Application with applicant " + applicationFromDb.get().getApplicant().getUser().getFirstName()
                     + " " + applicationFromDb.get().getApplicant().getUser().getLastName() + " and speciality \""
                     + applicationFromDb.get().getSpeciality().getTitle() + "\" already exists in database...");
-            return false;
+            return true;
         }
+        return false;
+    }
+
+    public boolean createApplication(Application application, Map<String, String> form, MultipartFile[] supportingDocuments) throws IOException {
+        logger.trace("Adding new application to database...");
+
+        if (checkIfExists(application))
+            return false;
 
         Map<Subject, Integer> znoMarks = parseZnoMarks(form);
         application.setZnoMarks(znoMarks);
@@ -70,8 +91,11 @@ public class ApplicationService {
         return true;
     }
 
-    public void updateApplication(Application application, Map<String, String> form, MultipartFile[] supportingDocuments) throws IOException {
+    public boolean updateApplication(Application application, Map<String, String> form, MultipartFile[] supportingDocuments) throws IOException {
         logger.trace("Updating application in database...");
+
+        if (checkIfExists(application))
+            return false;
 
         Map<Subject, Integer> znoMarks = parseZnoMarks(form);
         application.setZnoMarks(znoMarks);
@@ -86,6 +110,7 @@ public class ApplicationService {
 
         logger.trace("Saving updated application in database...");
         applicationRepository.save(application);
+        return true;
     }
 
     public Map<String, String> getZnoMarksErrors(Map<String, String> form) {

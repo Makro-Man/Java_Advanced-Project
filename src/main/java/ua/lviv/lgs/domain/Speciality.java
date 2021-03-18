@@ -1,5 +1,6 @@
 package ua.lviv.lgs.domain;
 
+
 import java.io.Serializable;
 import java.util.Set;
 
@@ -28,11 +29,11 @@ public class Speciality implements Serializable {
     @Column(name = "speciality_id")
     private Integer id;
     @Column
-    @NotBlank(message = "The name of the specialty cannot be empty!")
+    @NotBlank(message = "Specialty name cannot be empty!")
     private String title;
     @Column
-    @NotNull(message = "The dial plan cannot be empty!")
-    @Min(value = 1, message = "The dial plan cannot be zero!")
+    @NotNull(message = "Dial plan cannot be empty!")
+    @Min(value = 1, message = "Dial plan cannot be zero!")
     private Integer enrollmentPlan;
     @Column
     private boolean recruitmentCompleted;

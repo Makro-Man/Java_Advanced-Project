@@ -6,8 +6,8 @@
 <th:block th:replace="fragments/common::commonPage(_, ~{::main})">
     <main>
         <h3>[[${title}]]</h3>
-        <div th:if="${message}" class="alert alert-danger" role="alert">
-            [[${message}]]
+        <div th:if="${userExistsMessage}" class="alert alert-danger" role="alert">
+            [[#{userExistsMessage}]]
         </div>
 
         <form method="post" enctype="multipart/form-data">
@@ -20,6 +20,7 @@
                             <input th:class="${firstNameError}?'form-control is-invalid':'form-control'"
                                    type="text" name="firstName" th:value="${user}?${user.firstName}:${firstName}" th:placeholder="#{profile.first_name}" />
                             <div th:if="${firstNameError}" class="invalid-feedback" th:text="#{firstNameError}"></div>
+                            <div id="firstNameError"></div>
                         </div>
                     </div>
                     <div class="form-group row">
@@ -28,6 +29,7 @@
                             <input th:class="${lastNameError}?'form-control is-invalid':'form-control'"
                                    type="text" name="lastName" th:value="${user}?${user.lastName}:${lastName}" th:placeholder="#{profile.last_name}" />
                             <div th:if="${lastNameError}" class="invalid-feedback" th:text="#{lastNameError}"></div>
+                            <div id="lastNameError"></div>
                         </div>
                     </div>
                     <div class="form-group row">
@@ -36,6 +38,7 @@
                             <input th:class="${emailError}?'form-control is-invalid':'form-control'"
                                    type="text" name="email" th:value="${user}?${user.email}:${email}" th:placeholder="#{profile.email}" />
                             <div th:if="${emailError}" class="invalid-feedback" th:text="#{emailError}"></div>
+                            <div id="emailError"></div>
                         </div>
                     </div>
                     <div class="form-group row">
@@ -43,7 +46,8 @@
                         <div class="col-sm-9">
                             <input th:class="${passwordError}?'form-control is-invalid':'form-control'"
                                    type="password" name="password" th:placeholder="#{profile.password}" />
-                            <div th:if="${passwordError}" class="invalid-feedback" th:text="#{passwordError}"></div>
+                            <div th:if="${passwordError}" class="invalid-feedback" th:text="#{passwordLengthError}"></div>
+                            <div id="passwordError"></div>
                         </div>
                     </div>
                     <div class="form-group row">
@@ -52,6 +56,7 @@
                             <input th:class="${confirmPasswordError}?'form-control is-invalid':'form-control'"
                                    type="password" name="confirmPassword" th:placeholder="#{profile.confirm_password}" />
                             <div th:if="${confirmPasswordError}" class="invalid-feedback" th:text="#{confirmPasswordError}"></div>
+                            <div id="confirmPasswordError"></div>
                         </div>
                     </div>
                     <div sec:authorize="hasAuthority('USER')">
@@ -63,6 +68,7 @@
                                        th:value="${user}?${user.applicant?.birthDate}:${birthDate}"
                                        type="date" name="birthDate" th:placeholder="#{profile.birthday}" />
                                 <div th:if="${birthDateError}" class="invalid-feedback" th:text="#{birthDateError}"></div>
+                                <div id="birthDateError"></div>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -72,6 +78,7 @@
                                        th:value="${user}?${user.applicant?.city}:${city}"
                                        type="text" name="city" th:placeholder="#{profile.city}" />
                                 <div th:if="${cityError}" class="invalid-feedback" th:text="#{cityError}"></div>
+                                <div id="cityError"></div>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -81,6 +88,7 @@
                                        th:value="${user}?${user.applicant?.school}:${school}"
                                        type="text" name="school" th:placeholder="#{profile.school}" />
                                 <div th:if="${schoolError}" class="invalid-feedback" th:text="#{schoolError}"></div>
+                                <div id="schoolError"></div>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -92,6 +100,7 @@
                                            onchange="$(this).next('.custom-file-label').addClass('selected').html($(this).val().split('\\').pop())" />
                                     <label for="customFile" class="custom-file-label text-truncate">[[#{profile.photo_placeholder}]]</label>
                                     <div th:if="${photoError}" class="invalid-feedback" th:text="#{photoError}"></div>
+                                    <div id="photoError"></div>
                                 </div>
                             </div>
                         </div>
@@ -109,9 +118,12 @@
                 </div>
             </div>
 
-            <button class="btn btn-primary my-3" type="submit">[[#{profile.save}]]</button>
+            <button class="btn btn-primary my-3" type="submit" id="submit">[[#{profile.save}]]</button>
             <div class="float-right mt-4"><a href="/main">[[#{profile.main}]]</a></div>
         </form>
+        <script src="../js/messageResource.js"></script>
+        <script src="../js/commonUtils.js"></script>
+        <script src="../js/profile.js"></script>
     </main>
 </th:block>
 

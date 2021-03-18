@@ -37,15 +37,23 @@ public class SpecialityService {
         return specialityRepository.findByRecruitmentCompletedFalse();
     }
 
-    public boolean createSpeciality(Speciality speciality, Map<String, String> form) {
-        logger.trace("Adding new speciality to database...");
+    public boolean checkIfExists(Speciality speciality) {
+        logger.trace("Checking if stored speciality already exists in database...");
 
         Optional<Speciality> specialityFromDb = specialityRepository.findByTitle(speciality.getTitle());
 
-        if (specialityFromDb.isPresent()) {
+        if (specialityFromDb.isPresent() && speciality.getId() != specialityFromDb.get().getId()) {
             logger.warn("Speciality with title \"" + specialityFromDb.get().getTitle() + "\" already exists in database...");
-            return false;
+            return true;
         }
+        return false;
+    }
+
+    public boolean createSpeciality(Speciality speciality, Map<String, String> form) {
+        logger.trace("Adding new speciality to database...");
+
+        if (checkIfExists(speciality))
+            return false;
 
         Faculty faculty = parseFaculty(form);
         speciality.setFaculty(faculty);
@@ -56,8 +64,11 @@ public class SpecialityService {
         return true;
     }
 
-    public void updateSpeciality(Speciality speciality, Map<String, String> form) {
+    public boolean updateSpeciality(Speciality speciality, Map<String, String> form) {
         logger.trace("Updating speciality in database...");
+
+        if (checkIfExists(speciality))
+            return false;
 
         Faculty faculty = parseFaculty(form);
         speciality.setFaculty(faculty);
@@ -65,6 +76,7 @@ public class SpecialityService {
 
         logger.trace("Saving updated speciality in database...");
         specialityRepository.save(speciality);
+        return true;
     }
 
     public void deleteSpeciality(Speciality speciality) {

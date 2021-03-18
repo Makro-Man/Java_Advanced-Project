@@ -38,25 +38,38 @@ public class SubjectService {
                 .collect(Collectors.toCollection(TreeSet::new));
     }
 
-    public boolean createSubject(Subject subject) {
-        logger.trace("Adding new subject to database...");
+    public boolean checkIfExists(Subject subject) {
+        logger.trace("Checking if stored subject already exists in database...");
 
         Optional<Subject> subjectFromDb = subjectRepository.findByTitle(subject.getTitle());
 
-        if (subjectFromDb.isPresent()) {
+        if (subjectFromDb.isPresent() && subject.getId() != subjectFromDb.get().getId()) {
             logger.warn("Subject with title \"" + subjectFromDb.get().getTitle() + "\" already exists in database...");
-            return false;
+            return true;
         }
+        return false;
+    }
+
+    public boolean createSubject(Subject subject) {
+        logger.trace("Adding new subject to database...");
+
+        if (checkIfExists(subject))
+            return false;
 
         logger.trace("Saving new subject in database...");
         subjectRepository.save(subject);
         return true;
     }
 
-    public void saveSubject(Subject subject) {
+    public boolean updateSubject(Subject subject) {
         logger.trace("Updating subject in database...");
 
+        if (checkIfExists(subject))
+            return false;
+
+        logger.trace("Saving updated subject in database...");
         subjectRepository.save(subject);
+        return true;
     }
 
     public void deleteSubject(Subject subject) {
